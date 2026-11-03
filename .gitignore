@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Secrets — passwords and keys never go in the repo
+.env
+.streamlit/secrets.toml
+*.key
+
+# Large files (the parquet in data/ is 0.4 MB and stays in the repo)
+*.mp4
+*.zip
+models/*.joblib
+
+# macOS
+.DS_Store
+.claude/
