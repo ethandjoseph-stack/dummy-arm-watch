@@ -6,7 +6,8 @@
 
 ## קישורים
 
-- **האפליקציה (רצה בדפדפן, בלי התקנה):** https://dummy-arm-watch.vercel.app
+- **עמוד הפרויקט (הכל במקום אחד):** https://dummy-arm-watch.vercel.app
+- **האפליקציה (רצה בדפדפן, בלי התקנה):** https://dummy-arm-watch.vercel.app/app/
 - **מודל התלת-מימד של Dummy:** https://my-dummy-robot.vercel.app
 
 ## משפט הפרויקט

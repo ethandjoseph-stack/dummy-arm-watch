@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Put the app on the web at https://dummy-arm-watch.vercel.app (Vercel project dummy-arm-watch).
-# The same app.py runs inside the visitor's browser (stlite = Streamlit on Pyodide), so no server
-# is needed and anyone with the link can open it. Run: scripts/publish_web.sh   (needs vercel CLI, logged in)
+# Put the project on the web at https://dummy-arm-watch.vercel.app (Vercel project dummy-arm-watch):
+#   /        one page with everything: links, the README rendered, every project file to download
+#   /app/    the app: the same app.py run inside the visitor's browser (stlite = Streamlit on Pyodide)
+# No server is needed and anyone with the link can open it. Run: scripts/publish_web.sh   (needs vercel CLI, logged in)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SITE="$ROOT/.web-build"
-rm -rf "$SITE"; mkdir -p "$SITE/data"
+OUT="$ROOT/.web-build"
+rm -rf "$OUT"; SITE="$OUT/app"; mkdir -p "$SITE/data"
 cp "$ROOT/app.py" "$SITE/"
 # The browser reads parquet with fastparquet, which breaks on the dot in "observation.state":
 # the web copies name it "observation_state" (app.py renames it back).
@@ -42,4 +43,9 @@ cat > "$SITE/index.html" <<'HTML'
 </body>
 </html>
 HTML
-vercel deploy --prod --yes --project dummy-arm-watch --cwd "$SITE" "$@"
+# The project page and the files (from the last commit, so it matches what was handed in)
+mkdir -p "$OUT/files"
+git -C "$ROOT" archive --format=zip --prefix=dummy-arm-watch/ -o "$OUT/files/dummy-arm-watch.zip" HEAD
+git -C "$ROOT" archive HEAD | tar -x -C "$OUT/files"
+python3 "$ROOT/scripts/project_page.py" "$ROOT/README.md" "$OUT/files" > "$OUT/index.html"
+vercel deploy --prod --yes --project dummy-arm-watch --cwd "$OUT" "$@"
