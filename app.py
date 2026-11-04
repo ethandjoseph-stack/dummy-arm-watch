@@ -46,3 +46,14 @@ for name, path in DATASETS.items():
         f"{len(df):,} שורות (30 בשנייה), {len(df.columns)} עמודות."
     )
     st.dataframe(df.head(5))
+
+st.markdown("**טעימה מהדשבורד:** הכתף (`shoulder_lift`) בהקלטה הראשונה של הזרוע האמיתית. הפער בין הקווים הוא הפיגור.")
+first = load(DATASETS["זרוע SO-101 אמיתית"]).query("episode_index == 0")
+st.line_chart(
+    first.set_index("timestamp")[["shoulder_lift_cmd", "shoulder_lift_pos"]].rename(
+        columns={"shoulder_lift_cmd": "פקודה", "shoulder_lift_pos": "מיקום אמיתי"}
+    ),
+    color=["#4C9BE8", "#F5C518"],  # blue = command, Dummy's yellow = where the arm really is
+    x_label="שניות",
+    y_label="מעלות",
+)
