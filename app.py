@@ -17,6 +17,7 @@ DATASETS = {
 def load(path: Path) -> pd.DataFrame:
     """One row per frame (30 per second): where each joint was told to go and where it really is."""
     raw = pd.read_parquet(path)
+    raw = raw.rename(columns={"observation_state": "observation.state"})  # web copy: no dot in the name (fastparquet)
     command = pd.DataFrame(raw["action"].tolist(), columns=[f"{j}_cmd" for j in JOINTS])
     actual = pd.DataFrame(raw["observation.state"].tolist(), columns=[f"{j}_pos" for j in JOINTS])
     return pd.concat([raw[["episode_index", "frame_index", "timestamp"]], command, actual], axis=1)
