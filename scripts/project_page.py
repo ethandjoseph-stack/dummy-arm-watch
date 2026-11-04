@@ -43,6 +43,7 @@ code {{ padding:1px 4px; }} pre {{ padding:10px; overflow-x:auto; text-align:lef
 <div class="cards">
   <a class="card" href="app/"><b>▶ האפליקציה</b><span>רצה בדפדפן, בלי התקנה (טעינה ראשונה כ-20 שניות)</span></a>
   <a class="card" href="https://my-dummy-robot.vercel.app"><b>🤖 מודל התלת-מימד</b><span>הרובוט Dummy: חקירה, בנייה ב-39 שלבים, תנועה</span></a>
+  <a class="card" href="https://github.com/ethandjoseph-stack/dummy-arm-watch"><b>💻 הריפו בגיטהאב</b><span>הקוד וכל היסטוריית ה-commits</span></a>
   <a class="card" href="#readme"><b>📄 README.md</b><span>הגדרת הפרויקט המלאה (למטה בעמוד)</span></a>
   <a class="card" href="files/dummy-arm-watch.zip" download><b>⬇ כל קבצי הפרויקט (zip)</b><span>README, app.py, CLAUDE.md, requirements.txt, .gitignore, data/</span></a>
 </div>
