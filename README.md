@@ -6,6 +6,7 @@
 
 ## קישורים
 
+- **Claude Artifact (עמוד הפרויקט ב-Claude):** https://claude.ai/artifact/HMjwpByv2SZS2tKKv6xWR5
 - **עמוד הפרויקט (הכל במקום אחד):** https://dummy-arm-watch.vercel.app
 - **האפליקציה (רצה בדפדפן, בלי התקנה):** https://dummy-arm-watch.vercel.app/app/
 - **הריפו בגיטהאב:** https://github.com/ethandjoseph-stack/dummy-arm-watch
