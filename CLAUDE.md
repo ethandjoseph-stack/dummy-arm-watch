@@ -3,9 +3,13 @@
 Course project (וייב קודינג עם קלוד, Ariel, semester A 2026/27). A Streamlit app about a SO-101 robot arm, the arm of the home robot Dummy.
 
 - **Goal:** show where each joint of the arm lags behind its command, and predict that lag before a move.
-- **Data:** two LeRobot parquet files in `data/`, 30 fps, `action` = commanded position of 6 joints, `observation.state` = measured position (degrees). `dummy_sim_point.parquet`: Dummy's own demos in MuJoCo (60 episodes, 8,100 rows; lag clipped at 1.2°). `so101_pickplace.parquet`: public real SO-101 arm, `lerobot/svla_so101_pickplace` (50 episodes, 11,939 rows; lag up to 36°). Details in `data/README.md`. Later: Dummy's real recordings (`dummy teleop --record`), same format. The robot itself lives in the separate repo ~/Dummy.
+- **Data:** five files in `data/`, all 30 rows per second, degrees (the gripper is on a 0–100 scale). Details, column by column, in `data/README.md`. The robot itself lives in the separate repo ~/Dummy.
+  - `dummy_sim_point.parquet` and `so101_pickplace.parquet`: LeRobot format, `action` = commanded position of the 6 joints, `observation.state` = measured position, each a list of 6 in one cell. The first is Dummy's own demos in MuJoCo (60 episodes, 8,100 rows; lag clipped at 1.2°). The second is a public real SO-101 arm, `lerobot/svla_so101_pickplace` (50 episodes, 11,939 rows; lag up to 36°).
+  - `dummy_real_teleop_2026-11-09.parquet`: Dummy's real arm on its first day (5 runs, 42,468 rows). One column per joint: `leader.<joint>` = what the operator asked, `action.<joint>` = what the safety layer HANDS sent. **No measured position.** `action.*` is empty while `mode` is `paused` (81,750 empty cells). `t` counts cycles / 30, it is not a clock.
+  - `shoulder_lift_10deg_test_2026-11-09.csv`: one 10° step of the shoulder without HANDS (13 rows).
+  - `dummy_real_show_2026-11-11.parquet`: Dummy's real arm playing its show by itself (8 runs, 16,987 rows, no empty cells). `action.<joint>` and **`state.<joint>` = the measured position**: the only Dummy file with the model's target. Gentle motion with no load (lag up to 8°), and the runs repeat the same routines.
 - **Model (M3):** regression. Target = lag of a joint, `|action − state|` (first `shoulder_lift`). Features = commanded positions, commanded speed (change between frames), the other joints. Split by episode, never by row (leakage). KPI: MAE in degrees.
-- **Files:** `app.py` (the app), `data/` (data + where it comes from), `requirements.txt` (pinned), `README.md` (project definition, in Hebrew).
+- **Files:** `app.py` (the app), `data/` (data + where it comes from), `requirements.txt` (pinned), `README.md` (project definition, in Hebrew), `docs/pitch.md` + `docs/pitch/` (the M1 pitch of 11.11.2026), `scripts/` (`build_show_data.py` builds the show data file from Dummy's logs; `pitch_deck.py` fills the pitch slides and prints their numbers).
 
 ## Rules
 - The operator works alone and must understand every change: explain in plain Hebrew, one step at a time.
