@@ -1,7 +1,7 @@
 """Build data/dummy_real_show_2026-11-11.parquet: Dummy's real left arm playing its class show, with the
 command AND the real position of every joint in every control cycle (30 per second).
 
-Eight runs: five on the night of 10.11.2026 and three on the morning of 11.11.2026 (the last two are the longer,
+Ten runs: five on the night of 10.11.2026 and five on the morning of 11.11.2026 (the last four are the longer,
 113-second show). Only the runs named in WHAT below go in, so that a later run does not change the file by itself:
 to add one, add its line there. The source is the show's own logs in the Dummy repo
 (measurements/2026-11-10/show-logs and measurements/2026-11-11/show-logs, *.jsonl.gz).
@@ -37,6 +37,8 @@ WHAT = {
     "20261111-055302": "full show from the Desktop button, full volume",
     "20261111-072519": "longer show (113 s), first time on the arm",
     "20261111-075325": "longer show (113 s), after the sound fix",
+    "20261111-081631": "longer show (113 s), with the softened voice",
+    "20261111-082806": "longer show (113 s) again, the Mac's volume raised to full at second 82",
 }
 
 
@@ -69,7 +71,7 @@ def main() -> None:
         rows = []
         for c in cycles:
             if len(c["sent"]) != len(JOINTS) or len(c["present"]) != len(JOINTS):
-                continue  # a cycle that sent nothing (none in these six runs)
+                continue  # a cycle that sent nothing (none in these runs)
             assert all(c["sent"][f"{arm}{j}.pos"] == c["target"][f"{arm}{j}.pos"] for j in JOINTS), "HANDS changed a command"
             row = {"run": name, "run_index": i, "what": WHAT.get(name, ""),
                    "hands": f"new HANDS ({head['step_deg']} deg from last goal)", "t": c["t"], "step": c["step"]}

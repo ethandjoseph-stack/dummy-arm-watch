@@ -11,6 +11,7 @@ What it writes into docs/pitch/pitch-deck.html, in place (run it again after the
 Then it writes docs/pitch/pitch-deck-offline.html: the same page as a whole document, which opens from the disk
 by a double click (pitch-deck.html itself is the body the Claude Artifact takes, with no <html> around it).
 It also prints every number the slides quote, so that the text can be checked against the data.
+The bars on slide 2 are typed into the page by hand, from the table this prints (the show and the edge tests together).
 """
 
 import base64
@@ -48,22 +49,33 @@ def chart_data() -> dict:
 
 def print_numbers(d: dict) -> None:
     show = pd.read_parquet(DATA / "dummy_real_show_2026-11-11.parquet")
+    edge = pd.read_parquet(DATA / "dummy_real_edge_2026-11-11.parquet")
     teleop = pd.read_parquet(DATA / "dummy_real_teleop_2026-11-09.parquet")
+    real = [show, edge]  # the two files of Dummy's own arm that hold the real position
     print("slide 1: asked", min(d["stuck"]["asked"]), "to", max(d["stuck"]["asked"]), "deg; sent", d["stuck"]["sent"], "deg the whole window")
     print("slide 2: dance, worst lag", d["dance"]["note"]["lag"], "deg at second", d["dance"]["note"]["x"], "of the window")
-    speed = np.concatenate([np.abs(np.gradient(g[f"action.{j}"].to_numpy(), g["t"].to_numpy()))
-                            for j in ARM for _, g in show.groupby("run_index")])
-    lag = np.concatenate([(g[f"action.{j}"] - g[f"state.{j}"]).abs().to_numpy() for j in ARM for _, g in show.groupby("run_index")])
-    bins = pd.cut(speed, [0, 0.5, 10, 20, 40, 80], include_lowest=True)
-    print(f"slide 2: mean lag of the five arm joints by command speed (deg per second), {show.run_index.nunique()} runs:")
-    print(pd.DataFrame({"speed": bins, "lag": lag}).groupby("speed", observed=True)["lag"].agg(["count", "mean", "max"]).round(2).to_string())
-    slope, const = np.linalg.lstsq(np.c_[speed, np.ones_like(speed)], lag, rcond=None)[0]
-    print(f"slide 2: lag = {slope:.3f} s x speed + {const:.2f} deg; correlation {np.corrcoef(speed, lag)[0, 1]:.2f}")
-    worst = {j: round(float((show[f"action.{j}"] - show[f"state.{j}"]).abs().max()), 2) for j in ARM}
-    print("slide 4: worst lag per arm joint in the show data:", worst)
-    rows = {"sim": 8100, "public": 11939, "teleop 9.11": len(teleop), "shoulder test": 13, "show": len(show)}
-    print("slide 3: rows", rows, "total", sum(rows.values()), "| recordings", 60 + 50 + teleop.run_index.nunique() + 1 + show.run_index.nunique())
+    for name, files in (("the show", [show]), ("the edge tests", [edge]), ("both: the bars on slide 2", real)):
+        speed = np.concatenate([np.abs(np.gradient(g[f"action.{j}"].to_numpy(), g["t"].to_numpy()))
+                                for df in files for j in ARM for _, g in df.groupby("run_index")])
+        lag = np.concatenate([(g[f"action.{j}"] - g[f"state.{j}"]).abs().to_numpy()
+                              for df in files for j in ARM for _, g in df.groupby("run_index")])
+        bins = pd.cut(speed, [0, 0.5, 10, 20, 40, 81], include_lowest=True)
+        print(f"\nmean lag of the five arm joints by command speed (deg per second), {name}: "
+              f"{sum(df.run_index.nunique() for df in files)} runs, {len(lag):,} values")
+        print(pd.DataFrame({"speed": bins, "lag": lag}).groupby("speed", observed=True)["lag"].agg(["count", "mean", "max"]).round(2).to_string())
+        slope, const = np.linalg.lstsq(np.c_[speed, np.ones_like(speed)], lag, rcond=None)[0]
+        print(f"  lag = {slope:.3f} s x speed + {const:.2f} deg; correlation {np.corrcoef(speed, lag)[0, 1]:.2f}")
+    print()
+    runs = sum(df.run_index.nunique() for df in real)
+    for name, df in (("show", show), ("edge tests", edge)):
+        worst = {j: round(float((df[f"action.{j}"] - df[f"state.{j}"]).abs().max()), 2) for j in ARM}
+        print(f"slide 4: worst lag per arm joint, {name}:", worst)
+    rows = {"sim": 8100, "public": 11939, "teleop 9.11": len(teleop), "shoulder test": 13, "show": len(show), "edge tests": len(edge)}
+    print("slide 3: rows", rows, "total", sum(rows.values()), "| recordings", 60 + 50 + teleop.run_index.nunique() + 1 + runs,
+          "| rows of Dummy's arm with the real position", len(show) + len(edge))
     print("slide 4: show runs", show.run_index.nunique(), "| seconds of each run", [round(float(g.t.max()), 1) for _, g in show.groupby("run_index")])
+    print("slide 4: edge tests", edge.run_index.nunique(), "| minutes of motion", round(float(edge.groupby("run_index").t.max().sum()) / 60, 1),
+          "| the longest", round(float(edge.groupby("run_index").t.max().max()) / 60, 1), "minutes")
 
 
 def main() -> None:
